@@ -35,13 +35,21 @@ agent wants to run a tool
 
 ## Install
 
+Tripwire is not on ClawHub or npm yet. Install it from source:
+
 ```bash
-openclaw plugins install clawhub:openclaw-tripwire --accept-capabilities
+git clone https://github.com/Vicsbank/openclaw-tripwire.git
+cd openclaw-tripwire
+npm pack
+openclaw plugins install npm-pack:"$PWD/openclaw-tripwire-0.1.0.tgz" --force --accept-capabilities
 ```
 
-Or from npm (`--force` confirms a source outside ClawHub review):
+`npm pack` prints the tarball name; use that name if the version differs. `--force` confirms a source outside ClawHub review. This is the same path the end-to-end test uses.
+
+Once published, the install will be one line (these do **not** work yet):
 
 ```bash
+openclaw plugins install clawhub:openclaw-tripwire --accept-capabilities
 openclaw plugins install npm:openclaw-tripwire --force --accept-capabilities
 ```
 
@@ -162,8 +170,11 @@ The guard reads commands the way a shell would. It sees through quoting, `$(…)
 
 ## Upgrade and uninstall
 
+To upgrade a source install, run `git pull` in the checkout, then repeat the `npm pack` and `openclaw plugins install` steps above and reload the plugin. (Once Tripwire is on ClawHub, `openclaw plugins update tripwire` will do this.)
+
+To uninstall:
+
 ```bash
-openclaw plugins update tripwire
 openclaw plugins uninstall tripwire
 ```
 
