@@ -1,0 +1,63 @@
+{
+  "name": "openclaw-tripwire",
+  "version": "0.1.0",
+  "description": "Deterministic host guard, per-run tool budgets and exec approvals for OpenClaw agents.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Vicsbank",
+  "homepage": "https://github.com/Vicsbank/openclaw-tripwire#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vicsbank/openclaw-tripwire.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Vicsbank/openclaw-tripwire/issues"
+  },
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "security",
+    "guardrails",
+    "exec-approval",
+    "agent-safety"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "index.mjs",
+    "src/",
+    "openclaw.plugin.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "SECURITY.md",
+    "docs/",
+    "examples/"
+  ],
+  "scripts": {
+    "test": "node --test test/",
+    "pack:check": "npm pack --dry-run",
+    "test:e2e": "node test/e2e/run.mjs"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.11.3"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.mjs"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.11.3",
+      "minGatewayVersion": "2026.11.3"
+    },
+    "build": {
+      "openclawVersion": "2026.11.3"
+    },
+    "install": {
+      "npmSpec": "openclaw-tripwire",
+      "clawhubSpec": "clawhub:openclaw-tripwire",
+      "minHostVersion": ">=2026.11.3"
+    }
+  }
+}

@@ -1,0 +1,267 @@
+{
+  "id": "tripwire",
+  "name": "Tripwire",
+  "description": "Deterministic host guard, per-run tool budgets and exec approvals for OpenClaw agents.",
+  "version": "0.1.0",
+  "categories": [
+    "security"
+  ],
+  "activation": {
+    "onStartup": true
+  },
+  "contracts": {
+    "trustedToolPolicies": [
+      "host-guard",
+      "tool-budget"
+    ]
+  },
+  "cliCommands": [
+    {
+      "name": "tripwire",
+      "description": "Check Tripwire setup, test commands against the guard, manage approvals",
+      "hasSubcommands": true
+    }
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "dataDir": {
+        "type": "string",
+        "description": "Where grants and the decision log are kept. Default <OpenClaw state>/state/tripwire."
+      },
+      "hostGuard": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Deterministic rules that run before every tool call.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Turn the host guard on. Default true."
+          },
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Agent ids to guard. Empty (default) guards every agent."
+          },
+          "secretPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extra secret files or folders (~ allowed). Added to the built-in list (~/.ssh, ~/.aws, ~/.openclaw/credentials, keychains, …)."
+          },
+          "protectedPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extra files or folders the agent may read but never write, move or delete."
+          },
+          "keepFolders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extra folders that recursive rm may never remove."
+          },
+          "protectOpenClawConfig": {
+            "type": "boolean",
+            "default": true,
+            "description": "Block direct writes to ~/.openclaw/openclaw.json and openclaw config set on plugin/exec/hook/approval settings. Default true."
+          },
+          "protectPluginFiles": {
+            "type": "boolean",
+            "default": true,
+            "description": "Block agent writes anywhere in this plugin folder, not only its policy files. Default true."
+          },
+          "blockInsecureTls": {
+            "type": "boolean",
+            "default": true,
+            "description": "Block commands that switch off TLS certificate checks (curl -k, NODE_TLS_REJECT_UNAUTHORIZED=0, …). Default true."
+          }
+        }
+      },
+      "toolBudget": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Per-run limits that stop an agent that is looping.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Turn the budget on. Default true."
+          },
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Agent ids to limit. Empty (default) limits every agent."
+          },
+          "maxCalls": {
+            "type": "integer",
+            "minimum": 5,
+            "maximum": 1000,
+            "default": 60,
+            "description": "Tool calls per run. Default 60."
+          },
+          "maxSeconds": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 7200,
+            "default": 900,
+            "description": "Seconds spent inside tools per run (model thinking time does not count). Default 900."
+          },
+          "maxFailures": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "default": 8,
+            "description": "Failed tool calls per run. Default 8."
+          },
+          "refuseRepeats": {
+            "type": "boolean",
+            "default": true,
+            "description": "Refuse an exact repeat of a call that already ran in the run. Re-reads after a successful edit are allowed. Default true."
+          },
+          "execTimeoutCapSeconds": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3600,
+            "default": 0,
+            "description": "If above 0, every exec runs in the foreground with at most this timeout. Default 0 (off)."
+          },
+          "statefulTools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Tools whose identical calls are new evidence (counted, never refused as repeats). browser, computer and process are always included."
+          },
+          "untimedTools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Slow tools with their own timeouts; their time does not count toward maxSeconds."
+          },
+          "recoveryTools": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Sign-in or recovery tools. A successful call forgives one failure and lets a failed call run once more."
+          }
+        }
+      },
+      "execApproval": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Review host shell commands and ask the owner through OpenClaw plugin approvals.",
+        "properties": {
+          "enabled": {
+            "type": "boolean",
+            "default": false,
+            "description": "Turn exec approval on. Default false."
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "review",
+              "ask"
+            ],
+            "default": "review",
+            "description": "review: a model allows routine commands and asks you about the rest. ask: every command that is not read-only or granted asks you."
+          },
+          "agents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Agent ids to review. Empty (default) reviews every agent."
+          },
+          "model": {
+            "type": "string",
+            "description": "Review model (provider/model). Default: the host default model. Setting it needs llm.allowModelOverride."
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "zh-CN"
+            ],
+            "default": "en",
+            "description": "Language of approval prompts and review reasons."
+          },
+          "askTimeoutSeconds": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 600,
+            "default": 240,
+            "description": "How long an approval waits before the command is blocked. Default 240."
+          },
+          "reviewTimeoutSeconds": {
+            "type": "integer",
+            "minimum": 3,
+            "maximum": 60,
+            "default": 20,
+            "description": "Time limit for one model review; on timeout the owner is asked. Default 20."
+          },
+          "maxAsksPerRun": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20,
+            "default": 3,
+            "description": "Approvals one run may request before further commands are blocked. Default 3."
+          },
+          "readOnlyCommands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Extra command names that are read-only and never need review (e.g. your own status CLIs)."
+          }
+        }
+      }
+    }
+  },
+  "configContracts": {
+    "dangerousFlags": [
+      {
+        "path": "hostGuard.enabled",
+        "equals": false
+      },
+      {
+        "path": "hostGuard.protectOpenClawConfig",
+        "equals": false
+      }
+    ]
+  },
+  "uiHints": {
+    "hostGuard.secretPaths": {
+      "label": "Extra secret paths",
+      "placeholder": "~/.config/my-app/token"
+    },
+    "toolBudget.maxCalls": {
+      "label": "Tool calls per run"
+    },
+    "toolBudget.maxSeconds": {
+      "label": "Tool seconds per run"
+    },
+    "execApproval.mode": {
+      "label": "Approval mode"
+    },
+    "execApproval.model": {
+      "label": "Review model",
+      "advanced": true,
+      "placeholder": "anthropic/claude-sonnet-5-5"
+    },
+    "dataDir": {
+      "advanced": true
+    }
+  }
+}

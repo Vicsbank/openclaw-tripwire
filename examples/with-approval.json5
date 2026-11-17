@@ -1,0 +1,22 @@
+// Exec approval in review mode: routine shell commands run, risky ones ask you.
+{
+  plugins: {
+    entries: {
+      tripwire: {
+        enabled: true,
+        hooks: { allowConversationAccess: true },        // lets the reviewer see your request
+        llm: { allowModelOverride: true },                // only because `model` is set below
+        config: {
+          execApproval: {
+            enabled: true,
+            mode: "review",
+            model: "anthropic/claude-sonnet-5-5",         // optional; default is the host's default model
+            language: "en",                               // or "zh-CN"
+            readOnlyCommands: ["mytool"],                 // your own read-only CLIs
+          },
+          toolBudget: { untimedTools: ["browser"] },
+        },
+      },
+    },
+  },
+}

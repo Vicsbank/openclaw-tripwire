@@ -1,0 +1,21 @@
+// No model involved: everything that is not read-only or already granted asks you.
+// Tighter budget, extra secrets, guard and budget limited to the agent that has host access.
+{
+  plugins: {
+    entries: {
+      tripwire: {
+        enabled: true,
+        config: {
+          hostGuard: {
+            agents: ["main"],
+            secretPaths: ["~/.config/my-app", "/srv/secrets"],
+            protectedPaths: ["~/Developer/infra/terraform.tfstate"],
+            keepFolders: ["~/Photos"],
+          },
+          toolBudget: { agents: ["main"], maxCalls: 30, maxSeconds: 300, maxFailures: 4, execTimeoutCapSeconds: 120 },
+          execApproval: { enabled: true, mode: "ask", agents: ["main"], maxAsksPerRun: 2 },
+        },
+      },
+    },
+  },
+}

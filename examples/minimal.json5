@@ -1,0 +1,9 @@
+// Host guard and tool budget with their defaults, for every agent.
+// `openclaw plugins install` already writes this entry; nothing else is required.
+{
+  plugins: {
+    entries: {
+      tripwire: { enabled: true },
+    },
+  },
+}
